@@ -15,7 +15,7 @@ const endpoints = {
     getAllCategories: `${API_BASE}/api/category/`,
 
     // Product
-    AllProducts:`${API_BASE}/api/product/`,
+    AllProducts:`${API_BASE}/api/product/admin/see`,
     addProduct: (categoryId: string) =>
         `${API_BASE}/api/product/${categoryId}/create`,
     deleteProductFromCategoryAndProduct: (
@@ -24,6 +24,8 @@ const endpoints = {
     ) => `${API_BASE}/api/product/${productId}/${categoryId}`,
     updateStock: (productId: string) =>
         `${API_BASE}/api/product/${productId}/updateStock`,
+    updateFeatured: (productId: string) =>
+        `${API_BASE}/api/product/${productId}/updateFeatured`,
 
     // Order
     getAllOrders: `${API_BASE}/api/order/admin/all`,

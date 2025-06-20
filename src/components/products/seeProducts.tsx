@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import StarIcon from '@mui/icons-material/Star';
-import Inventory2Icon from '@mui/icons-material/Inventory2';
+import { CheckBoxOutlineBlank } from '@mui/icons-material';
 
 interface ProductCardProps {
     name: string;
@@ -28,7 +28,8 @@ interface ProductCardProps {
     inStock: boolean;
     featured: boolean;
 
-    onClick?: () => void;
+    handleStock?: () => void;
+    handleFeatured?: () => void;
 }
 
 export default function ProductCard({
@@ -44,7 +45,8 @@ export default function ProductCard({
     brand,
     inStock,
     featured,
-    onClick,
+    handleFeatured,
+    handleStock,
 }: ProductCardProps) {
     return (
         <Card className="rounded-2xl shadow-md p-4 flex flex-col gap-3 w-full max-w-3xl">
@@ -69,18 +71,19 @@ export default function ProductCard({
 
                 {/* Status + Action */}
                 <div className="flex items-center gap-2">
-                    {featured && (
-                        <Tooltip title="Featured">
+                    {featured ? (
+                        <Tooltip title="Featured" onClick={handleFeatured}>
                             <StarIcon className="text-yellow-500" />
                         </Tooltip>
-                    )}
-                    {!inStock && (
-                        <Tooltip title="Out of Stock">
-                            <Inventory2Icon className="text-red-500" />
+                    ):  (
+                        <Tooltip title="Featured" onClick={handleFeatured}>
+                            <StarIcon className="text-blue-500" />
                         </Tooltip>
                     )}
-                    <IconButton onClick={onClick}>
-                        <CheckBoxIcon className="text-blue-600" />
+                    <IconButton onClick={handleStock}>
+                        {
+                            inStock?<CheckBoxIcon className="text-blue-600" /> :<CheckBoxOutlineBlank className='text-red-300'/>
+                        }
                     </IconButton>
                 </div>
             </div>
