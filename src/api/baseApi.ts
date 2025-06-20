@@ -1,5 +1,4 @@
-export const API_BASE = 'http://localhost:5000';
-// export const API_BASE = process.env.REACT_APP_Backend_Api || 'http://localhost:800';
+export const API_BASE = process.env.REACT_APP_Backend_Api;
 
 const endpoints = {
     // Admin Auth
