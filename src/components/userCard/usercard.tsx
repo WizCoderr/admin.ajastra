@@ -6,10 +6,9 @@ import {
     Avatar,
     Box,
 } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
 import { Api, endpoints } from '../../api';
-import  'react-toastify'
 import { toast } from 'react-toastify';
+
 interface User {
     id: string;
     email: string;
@@ -26,11 +25,11 @@ export default function UserCard() {
         try {
             const res = await Api.get(endpoints.getAllUsers);
             const users = res.data.data;
-            toast.success("Users fetched Successfully")
+            toast.success("Users fetched Successfully");
             setUserData(Array.isArray(users) ? users : []);
         } catch (error) {
             console.error('Error fetching users:', error);
-            toast.error(`Error is ${error}`)
+            toast.error(`Error is ${error}`);
             setUserData([]);
         }
     }
@@ -43,40 +42,39 @@ export default function UserCard() {
         <div className="p-4">
             <Box display="flex" flexWrap="wrap" gap={3}>
                 {userData.map((user) => (
-                    <Box
+                    <Card
                         key={user.id}
-                        width={{ xs: '100%', sm: '48%', md: '31%' }}
-                        mb={3}
+                        sx={{
+                            backgroundColor: '#111',
+                            color: '#fff',
+                            borderRadius: '16px',
+                            width: 200,
+                            textAlign: 'center',
+                            paddingY: 2,
+                        }}
                     >
-                        <Card className="w-full shadow-md rounded-2xl text-black">
-                            <CardContent>
-                                <Box className="flex items-center gap-4 mb-4">
-                                    <Avatar>
-                                        <PersonIcon />
-                                    </Avatar>
-                                    <Box>
-                                        <Typography variant="h6" className="text-black">
-                                            {user.fullName}
-                                        </Typography>
-                                        <Typography variant="body2" className="text-black">
-                                            {user.email}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                                <Box className="space-y-1">
-                                    <Typography className="text-sm text-black ">
-                                        <strong>Phone:</strong> {user.phone}
-                                    </Typography>
-                                    <Typography className="text-sm text-black">
-                                        <strong>Role:</strong> {user.role}
-                                    </Typography>
-                                    <Typography className="text-sm text-black">
-                                        <strong>Address:</strong> {user.address || 'Not provided'}
-                                    </Typography>
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Box>
+                        <CardContent>
+                            <Avatar
+                                src=''
+                                sx={{
+                                    width: 64,
+                                    height: 64,
+                                    marginX: 'auto',
+                                    marginBottom: 2,
+                                }}
+                            />
+                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                                {user.fullName}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: '#aaa' }}>
+                                {user.email}
+                            </Typography>
+                            <br />
+                            <Typography variant="body2" sx={{ color: '#aaa' }}>
+                                {user.address || 'No Address Provided'}
+                            </Typography>
+                        </CardContent>
+                    </Card>
                 ))}
             </Box>
         </div>

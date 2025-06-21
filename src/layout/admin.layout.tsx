@@ -69,7 +69,7 @@ export default function AdminLayout() {
         await Api.post(endpoints.adminLogout).then((res) => {
             alert(res.data.message)
             removeToken()
-            handleNavigation('/login')
+            navigate('/login')
         })
     }
 

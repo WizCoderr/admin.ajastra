@@ -7,6 +7,7 @@ import CustomersPage from "../pages/admin/CustomersPage";
 import CategoriesPage from "../pages/admin/CategoriesPage";
 import ProductsPage from "../pages/admin/ProductsPage";
 import AllProductPage from "../pages/admin/AllProductPage";
+import Login from "../pages/Login";
 
 export default function AdminRoutes() {
     return (
@@ -20,6 +21,7 @@ export default function AdminRoutes() {
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="products" element={<ProductsPage />} />
             <Route path="allProducts" element={<AllProductPage />} />
+            <Route path="login" element={<Login />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
         </Routes>
