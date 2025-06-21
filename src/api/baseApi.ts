@@ -14,6 +14,7 @@ const endpoints = {
     getAllCategories: `${API_BASE}/api/category/`,
 
     // Product
+    getProductById:(productId:string)=>`${API_BASE}/api/product/${productId}`,
     AllProducts:`${API_BASE}/api/product/admin/see`,
     addProduct: (categoryId: string) =>
         `${API_BASE}/api/product/${categoryId}/create`,

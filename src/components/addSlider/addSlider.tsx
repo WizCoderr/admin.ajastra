@@ -29,6 +29,7 @@ function AddSlider() {
         await Api.post(endpoints.addSlider, fromData).then(() => {
             alert("Data Added Successfully")   
             setImage(null);
+            setPreview(null)
         }).catch((e) => {
             alert(`Error happened: ${e}`)
         })

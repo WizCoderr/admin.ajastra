@@ -64,7 +64,7 @@ export default function Login() {
             setToken(res.data.data.token);
             setRole(res.data.data.user.role);
             toast.success(res.data.message)
-            navigate('/admin/dashboard');
+            navigate('/dashboard');
         } catch (e) {
             setLoading(false);
             console.error(`Error: ${e}`);
@@ -137,13 +137,6 @@ export default function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-
-                    <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
-                        <FormControlLabel control={<Checkbox />} label="Remember me" />
-                        <Link href="/forgotPassword" underline="hover" fontSize="14px">
-                            Forgot password?
-                        </Link>
-                    </Box>
 
                     <Button
                         variant="contained"

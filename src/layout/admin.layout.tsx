@@ -25,8 +25,7 @@ import {
     ProductionQuantityLimits,
     Tune
 } from "@mui/icons-material";
-import { Api, endpoints } from "../api";
-import { toast } from "react-toastify";
+import { Api, endpoints, removeToken } from "../api";
 
 const drawerWidth = 240;
 
@@ -66,9 +65,11 @@ export default function AdminLayout() {
         navigate(path);
         setMobileOpen(false);
     };
-    const handleLogOut = async()=>{
-        await Api.get(endpoints.adminLogout).then((res)=>{
-            toast.success(res.data.message)
+    const handleLogOut = async () => {
+        await Api.post(endpoints.adminLogout).then((res) => {
+            alert(res.data.message)
+            removeToken()
+            handleNavigation('/login')
         })
     }
 
@@ -114,7 +115,7 @@ export default function AdminLayout() {
                     startIcon={<Logout />}
                     sx={{ color: "#ef4444", "&:hover": { color: "#dc2626" } }}
                     fullWidth
-                    onClick={()=> handleLogOut()}
+                    onClick={() => handleLogOut()}
                 >
                     LOG OUT
                 </Button>
