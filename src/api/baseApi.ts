@@ -10,6 +10,7 @@ const endpoints = {
     addAddress: (userId: string) => `${API_BASE}/api/address/${userId}`,
 
     // Category
+    uploadCatrgoryImage:`${API_BASE}/api/category/upload`,
     addCategory: `${API_BASE}/api/category`,
     getAllCategories: `${API_BASE}/api/category/`,
 

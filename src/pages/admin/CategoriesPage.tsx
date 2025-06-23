@@ -43,7 +43,7 @@ const CategoriesPage = () => {
             </Button>
 
             {open && (
-                <AddCategoryPopup onClose={()=> {handleClose()}} />
+                <AddCategoryPopup open={true} onClose={()=> {handleClose()}} />
             )}
             {/* Categories List */}
             <Box className="min-h-[200px]">

@@ -15,6 +15,7 @@ import { Api, endpoints } from '../../api';
 export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState('');
 
@@ -32,33 +33,62 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
             return;
         }
 
+        if (!image) {
+            toast("Please select an image.");
+            return;
+        }
+
         try {
+            // Step 1: Upload image to Cloudinary
+            console.log("Preset:", process.env.REACT_APP_CLOUDINARY_PRESET);
+            console.log("URL:", process.env.REACT_APP_CLOUDINARY_URL);
+
+            const cloudinaryForm = new FormData();
+            cloudinaryForm.append("file", image);
+            cloudinaryForm.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET || '');
+            const cloudinaryRes = await fetch(process.env.REACT_APP_CLOUDINARY_URL || '', {
+                method: 'POST',
+                body: cloudinaryForm,
+            });
+
+            const cloudinaryData = await cloudinaryRes.json();
+            console.log(cloudinaryData)
+            if (!cloudinaryData.secure_url) {
+                toast.error("Image upload to Cloudinary failed");
+                return;
+            }
+
+            // Step 2: Submit category data with Cloudinary URL
             const form = new FormData();
             form.append("name", name);
-            if (image) {
-                form.append("category_img", image);
-            } else {
-                toast("Please select an image.");
-                return;
-            } form.append("description", description)
-            console.log('Category data:', { name, description, image });
-            await Api.post(endpoints.addCategory,form).then((res)=>{
-                toast.success("Category Added Successfully")
-                console.log("Category Added Successfully")
-            }).catch((e)=>{
-                toast.error("Error in adding category");
-                console.log(`Error: ${e}`)
-            })
+            form.append("description", description);
+            form.append("category_img", cloudinaryData.secure_url); // send URL instead of file
+
+            console.log('Category data:', { name, description, imageUrl: cloudinaryData.secure_url });
+
+            await Api.post(endpoints.addCategory, form)
+                .then((res) => {
+                    toast.success("Category Added Successfully");
+                    console.log("Category Added Successfully");
+                })
+                .catch((e) => {
+                    toast.error("Error in adding category");
+                    console.log(`Error: ${e}`);
+                });
+
+            // Reset form
             setName('');
             setDescription('');
             setImage(null);
             setPreview('');
             onClose();
+
         } catch (e) {
-            alert('Something went wrong');
+            toast.error('Something went wrong');
             console.error(e);
         }
     };
+
 
     return (
         <Dialog

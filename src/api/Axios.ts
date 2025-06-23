@@ -1,9 +1,13 @@
+
 import { API_BASE } from './baseApi';
 import axios from 'axios';
 import { getToken } from './index';
 
 const API = axios.create({
     baseURL: API_BASE,
+    headers: {
+        'Access-Control-Allow-Origin': '*',
+    },
 });
 
 // Automatically attach Bearer token to requests
