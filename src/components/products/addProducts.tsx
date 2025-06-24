@@ -3,6 +3,7 @@ import {
     TextField, Button, Typography, FormControlLabel, Checkbox, MenuItem,
     Box, ToggleButton, ToggleButtonGroup, CircularProgress, Alert
 } from '@mui/material';
+import { Upload } from 'lucide-react';
 import { Api, endpoints } from '../../api';
 import { toast } from 'react-toastify';
 
@@ -10,7 +11,6 @@ interface Category {
     id: string;
     name: string;
 }
-
 
 const AddProduct: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -31,7 +31,7 @@ const AddProduct: React.FC = () => {
         inStock: true,
         featured: false,
         categoryId: '',
-        images: [] as string[], // cloudinary URLs
+        images: [] as string[],
     });
 
     const fetchCategories = async () => {
@@ -87,94 +87,87 @@ const AddProduct: React.FC = () => {
         }
     };
 
-const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-    if (!product.name.trim() || !product.description.trim()) {
-        toast.error('Please fill in all fields');
-        return;
-    }
+        if (!product.name.trim() || !product.description.trim()) {
+            toast.error('Please fill in all fields');
+            return;
+        }
 
-    if (imageFiles.length === 0) {
-        toast.error('Please upload at least one image');
-        return;
-    }
+        if (imageFiles.length === 0) {
+            toast.error('Please upload at least one image');
+            return;
+        }
 
-    setLoading(true);
-    setUploadProgress(0);
+        setLoading(true);
+        setUploadProgress(0);
 
-    try {
-        const cloudinaryUrls: string[] = [];
+        try {
+            const cloudinaryUrls: string[] = [];
 
-        // Step 1: Upload each image to Cloudinary asynchronously
-        for (let i = 0; i < imageFiles.length; i++) {
-            const formData = new FormData();
-            formData.append("file", imageFiles[i]);
-            formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET || '');
+            for (let i = 0; i < imageFiles.length; i++) {
+                const formData = new FormData();
+                formData.append("file", imageFiles[i]);
+                formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET || '');
 
-            const cloudinaryRes = await fetch(process.env.REACT_APP_CLOUDINARY_URL || '', {
-                method: 'POST',
-                body: formData,
-            });
+                const cloudinaryRes = await fetch(process.env.REACT_APP_CLOUDINARY_URL || '', {
+                    method: 'POST',
+                    body: formData,
+                });
 
-            const cloudinaryData = await cloudinaryRes.json();
-            console.log(`Image ${i + 1}:`, cloudinaryData);
+                const cloudinaryData = await cloudinaryRes.json();
+                if (!cloudinaryData.secure_url) {
+                    toast.error(`Failed to upload image ${i + 1}`);
+                    return;
+                }
 
-            if (!cloudinaryData.secure_url) {
-                toast.error(`Failed to upload image ${i + 1}`);
-                return;
+                cloudinaryUrls.push(cloudinaryData.secure_url);
+                setUploadProgress(Math.round(((i + 1) / imageFiles.length) * 100));
             }
 
-            cloudinaryUrls.push(cloudinaryData.secure_url);
-            setUploadProgress(Math.round(((i + 1) / imageFiles.length) * 100));
-        }
+            const payload = {
+                ...product,
+                images: cloudinaryUrls,
+            };
 
-        // Step 2: Submit final product data
-        const payload = {
-            ...product,
-            images: cloudinaryUrls, // array of Cloudinary URLs
-        };
+            const apiRes = await Api.post(endpoints.addProduct(product.categoryId), payload);
 
-        console.log("Final Payload:", payload);
+            if (apiRes.status === 200 || apiRes.status === 201) {
+                toast.success("✅ Product Added Successfully");
 
-        const apiRes = await Api.post(endpoints.addProduct(product.categoryId), payload);
+                product.images.forEach(url => URL.revokeObjectURL(url));
+                setProduct({
+                    name: '',
+                    description: '',
+                    price: '',
+                    material: '',
+                    fit: 'REGULAR',
+                    brand: '',
+                    sizes: '',
+                    colors: '',
+                    inStock: true,
+                    featured: false,
+                    categoryId: '',
+                    images: [],
+                });
+                setImageFiles([]);
+                setUploadProgress(0);
 
-        if (apiRes.status === 200 || apiRes.status === 201) {
-            toast.success("✅ Product Added Successfully");
+                const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                if (fileInput) fileInput.value = '';
+            } else {
+                toast.error("❌ Failed to add product");
+            }
 
-            // Cleanup and reset
-            product.images.forEach(url => URL.revokeObjectURL(url));
-            setProduct({
-                name: '',
-                description: '',
-                price: '',
-                material: '',
-                fit: 'REGULAR',
-                brand: '',
-                sizes: '',
-                colors: '',
-                inStock: true,
-                featured: false,
-                categoryId: '',
-                images: [],
-            });
-            setImageFiles([]);
+        } catch (err: any) {
+            console.error("Error uploading product:", err);
+            toast.error(err?.message || "Something went wrong");
+        } finally {
+            setLoading(false);
             setUploadProgress(0);
-
-            const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-            if (fileInput) fileInput.value = '';
-        } else {
-            toast.error("❌ Failed to add product");
         }
-
-    } catch (err: any) {
-        console.error("Error uploading product:", err);
-        toast.error(err?.message || "Something went wrong");
-    } finally {
-        setLoading(false);
-        setUploadProgress(0);
-    }
-};
+    };
 
     useEffect(() => {
         return () => {
@@ -223,16 +216,46 @@ const handleSubmit = async (e: React.FormEvent) => {
                 </Box>
 
                 <Box>
-                    <Typography variant="body2">Upload Product Images (Max 5)</Typography>
-                    <input type="file" multiple accept="image/jpeg,image/jpg,image/png,image/webp" onChange={handleImageUpload} disabled={loading} />
-                    {imageError && <Alert severity="error" className="mt-2">{imageError}</Alert>}
+                    <Typography variant="body2" className="mb-1">Upload Product Images (Max 5)</Typography>
 
-                    <Box className="flex gap-2 mt-3 flex-wrap">
+                    <Button
+                        variant="outlined"
+                        component="label"
+                        startIcon={<Upload />}
+                        disabled={loading}
+                        className="mb-3"
+                    >
+                        Select Images
+                        <input
+                            type="file"
+                            hidden
+                            multiple
+                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                            onChange={handleImageUpload}
+                        />
+                    </Button>
+
+                    {imageError && (
+                        <Alert severity="error" className="mb-3">
+                            {imageError}
+                        </Alert>
+                    )}
+
+                    <Box className="flex flex-wrap gap-4 mt-2">
                         {product.images.map((url, idx) => (
-                            <div key={idx} className="relative">
-                                <img src={url} alt={`Preview ${idx + 1}`} className="w-20 h-20 object-cover rounded-md border" />
-                                <span className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">{idx + 1}</span>
-                            </div>
+                            <Box
+                                key={idx}
+                                className="relative w-24 h-24 border border-gray-300 rounded-lg overflow-hidden"
+                            >
+                                <img
+                                    src={url}
+                                    alt={`Preview ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                />
+                                <Box className="absolute top-1 right-1 bg-blue-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                                    {idx + 1}
+                                </Box>
+                            </Box>
                         ))}
                     </Box>
                 </Box>
@@ -246,7 +269,12 @@ const handleSubmit = async (e: React.FormEvent) => {
                     </Box>
                 )}
 
-                <Button type="submit" variant="contained" disabled={loading || imageFiles.length === 0} startIcon={loading ? <CircularProgress size={20} /> : null}>
+                <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={loading || imageFiles.length === 0}
+                    startIcon={loading ? <CircularProgress size={20} /> : null}
+                >
                     {loading ? 'Uploading...' : 'Add Product'}
                 </Button>
             </form>
