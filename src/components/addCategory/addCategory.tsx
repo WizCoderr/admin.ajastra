@@ -64,9 +64,9 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
             form.append("description", description);
             form.append("category_img", cloudinaryData.secure_url); // send URL instead of file
 
-            console.log('Category data:', { name, description, imageUrl: cloudinaryData.secure_url });
+            console.log('Category data:', { name, description, category_img: cloudinaryData.secure_url });
 
-            await Api.post(endpoints.addCategory, form)
+            await Api.post(endpoints.addCategory, { name, description, category_img: cloudinaryData.secure_url })
                 .then((res) => {
                     toast.success("Category Added Successfully");
                     console.log("Category Added Successfully");
