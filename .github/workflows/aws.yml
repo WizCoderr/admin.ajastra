@@ -16,7 +16,7 @@ jobs:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 13.203.137.62  # <-- Your EC2 Public IP
+          host: 13.232.155.136  # <-- Your EC2 Public IP
           username: ubuntu     # or ec2-user for Amazon Linux
           key: ${{ secrets.EC2_SSH_KEY }} # Your PEM key saved as GitHub Secret
           script: |
