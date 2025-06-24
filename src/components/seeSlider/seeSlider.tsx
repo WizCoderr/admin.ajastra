@@ -4,7 +4,8 @@ import { Api, endpoints } from '../../api';
 
 interface ISlider {
     id: string;
-    image: string;
+    image: string; // previously `image`
+    mediaType: 'image' | 'video';
 }
 
 export default function SeeSlider() {
@@ -20,7 +21,6 @@ export default function SeeSlider() {
     };
 
     const handleDelete = async (id: string) => {
-        console.log(id)
         const confirmDelete = window.confirm("Are you sure you want to delete this slider?");
         if (!confirmDelete) return;
 
@@ -46,14 +46,28 @@ export default function SeeSlider() {
                     sliders.map((slider) => (
                         <Box
                             key={slider.id}
-                            className="w-[300px] bg-white rounded-lg shadow hover:shadow-xl transition-shadow overflow-hidden"
+                            className="rounded-2xl shadow-md hover:shadow-xl transition duration-300"
                         >
-                            <Box
-                                className="h-48 bg-cover "
-                                style={{ backgroundImage: `url(${slider.image})` }}
-                            />
+                            <Box className="h-48 overflow-hidden bg-black ">
+                                {slider.mediaType === 'image' ? (
+                                    <Box className="w-full h-[180px] flex items-center justify-center p-4">
+                                        <img
+                                            src={slider.image}
+                                            alt=''
+                                            className="w-32 h-32 object-cover rounded-full border-2 border-gray-200 shadow"
+                                        />
+                                    </Box>
+                                ) : (
+                                    <Box className="w-full h-[180px] flex items-center justify-center p-4">
+                                        <video
+                                            src={slider.image}
+                                            controls
+                                            className="w-32 h-32 object-cover border-2 border-gray-200 shadow"
+                                        />
+                                    </Box>
+                                )}
+                            </Box>
                             <Box className="p-4">
-                                <img src={slider.image} alt={slider.id}/>
                                 <Button
                                     variant="contained"
                                     color="error"
