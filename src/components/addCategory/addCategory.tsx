@@ -7,6 +7,8 @@ import {
     Avatar,
     IconButton,
     Typography,
+    CircularProgress,
+    LinearProgress
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { toast } from 'react-toastify';
@@ -15,9 +17,9 @@ import { Api, endpoints } from '../../api';
 export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-
-    const [image, setImage] = useState(null);
+    const [image, setImage] = useState<File | null>(null);
     const [preview, setPreview] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleImageChange = (e: any) => {
         const file = e.target.files?.[0];
@@ -38,45 +40,31 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
             return;
         }
 
-        try {
-            // Step 1: Upload image to Cloudinary
-            console.log("Preset:", process.env.REACT_APP_CLOUDINARY_PRESET);
-            console.log("URL:", process.env.REACT_APP_CLOUDINARY_URL);
+        setLoading(true);
 
+        try {
             const cloudinaryForm = new FormData();
             cloudinaryForm.append("file", image);
             cloudinaryForm.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET || '');
+
             const cloudinaryRes = await fetch(process.env.REACT_APP_CLOUDINARY_URL || '', {
                 method: 'POST',
                 body: cloudinaryForm,
             });
 
             const cloudinaryData = await cloudinaryRes.json();
-            console.log(cloudinaryData)
             if (!cloudinaryData.secure_url) {
                 toast.error("Image upload to Cloudinary failed");
                 return;
             }
 
-            // Step 2: Submit category data with Cloudinary URL
-            const form = new FormData();
-            form.append("name", name);
-            form.append("description", description);
-            form.append("category_img", cloudinaryData.secure_url); // send URL instead of file
+            await Api.post(endpoints.addCategory, {
+                name,
+                description,
+                category_img: cloudinaryData.secure_url,
+            });
 
-            console.log('Category data:', { name, description, category_img: cloudinaryData.secure_url });
-
-            await Api.post(endpoints.addCategory, { name, description, category_img: cloudinaryData.secure_url })
-                .then((res) => {
-                    toast.success("Category Added Successfully");
-                    console.log("Category Added Successfully");
-                })
-                .catch((e) => {
-                    toast.error("Error in adding category");
-                    console.log(`Error: ${e}`);
-                });
-
-            // Reset form
+            toast.success("Category Added Successfully");
             setName('');
             setDescription('');
             setImage(null);
@@ -86,9 +74,10 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
         } catch (e) {
             toast.error('Something went wrong');
             console.error(e);
+        } finally {
+            setLoading(false);
         }
     };
-
 
     return (
         <Dialog
@@ -97,12 +86,14 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
             maxWidth="sm"
             fullWidth
             PaperProps={{
-                className: 'bg-gray-900 rounded-2xl p-8 border border-gray-700',
+                className: 'bg-gray-900 rounded-2xl p-8 border border-gray-700 relative',
             }}
             BackdropProps={{
                 className: 'bg-black bg-opacity-80',
             }}
         >
+            {loading && <LinearProgress className="!absolute top-0 left-0 w-full" />}
+
             {/* Close Button */}
             <IconButton
                 onClick={onClose}
@@ -112,7 +103,7 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
             </IconButton>
 
             {/* Form Content */}
-            <Box className="space-y-6">
+            <Box className="space-y-6 mt-6">
                 <Typography
                     variant="h6"
                     className="text-black font-semibold text-center"
@@ -126,6 +117,7 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
                     variant="outlined"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    disabled={loading}
                 />
 
                 <TextField
@@ -136,6 +128,7 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
                     rows={4}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    disabled={loading}
                 />
 
                 <Box className="flex items-center justify-between flex-wrap gap-4 mt-4">
@@ -151,6 +144,7 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
                                 accept="image/*"
                                 onChange={handleImageChange}
                                 hidden
+                                disabled={loading}
                             />
                         </label>
                     </Box>
@@ -158,9 +152,11 @@ export default function AddCategoryPopup({ open = true, onClose = () => { } }) {
                     <Button
                         onClick={handleSubmit}
                         variant="contained"
-                        className="!bg-blue-600 hover:!bg-blue-700 text-white px-6 py-2 rounded-xl normal-case"
+                        disabled={loading}
+                        className="!bg-blue-600 hover:!bg-blue-700 text-white px-6 py-2 rounded-xl normal-case flex items-center gap-2"
                     >
-                        Add Category
+                        {loading && <CircularProgress size={20} color="inherit" />}
+                        {!loading && 'Add Category'}
                     </Button>
                 </Box>
             </Box>
